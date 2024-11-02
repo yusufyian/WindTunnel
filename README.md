@@ -57,7 +57,7 @@ npm install pm2@latest -g
 ~~~
 
 
-Run the script:
+Run the script with single instance:
 ~~~
 cd src
 ~~~
