@@ -1,4 +1,14 @@
-// https://www.quicknode.com/guides/solana-development/tooling/web3-2/transfer-sol
+// Author: yussufier@gmail.com
+// Description: 
+// WindTunnel is a simple tool designed for stress testing applications 
+// built on the Solana blockchain, including both the base layer and layer 2 networks. 
+// This tool allows developers to simulate high-load scenarios, 
+// measure performance metrics, and identify potential bottlenecks 
+// in their applications. It provides functionalities to create 
+// multiple transactions, monitor response times, and evaluate 
+// the overall stability of the network under stress conditions.
+
+// ref -> https://www.quicknode.com/guides/solana-development/tooling/web3-2/transfer-sol
 // npm install @solana/web3.js@2.0.0-rc.1 @solana-program/system && npm install --save-dev @types/node
 // tsc --init --resolveJsonModule true
 import {
