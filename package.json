@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "@solana-program/system": "^0.5.4",
+    "@solana/web3.js": "^2.0.0-rc.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.8.1"
+  }
+}
