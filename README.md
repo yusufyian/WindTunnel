@@ -1,5 +1,7 @@
 # WindTunnel
 
+WindTunnel is a simple tool designed for stress testing based on the Solana base layer and layer 2 networks.
+
 - Knowledge of Solana basics (Guide: [Introduction to Solana](https://docs.solana.com/introduction))
 - Node.js (version 19 or higher) installed
 - TypeScript and ts-node installed
