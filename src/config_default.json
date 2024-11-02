@@ -2,5 +2,5 @@
     "directoryPath": "/home/ubuntu/.config/solana/tps-wallet",
     "httpProvider": "http://127.0.0.1:8899",
     "wssProvider": "ws://127.0.0.1:8900",
-    "payerArray": []  
+    "payerArray": ["Fill in the keypair represented as a Uint8Array."]  
 }
