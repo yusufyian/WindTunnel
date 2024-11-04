@@ -1,0 +1,8 @@
+src/config_benchmark.json
+
+src/config_testnet.json
+src/block.txt
+package-lock.json
+
+node_modules/
+logs/
