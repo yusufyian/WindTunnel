@@ -1,4 +1,13 @@
 "use strict";
+// Author: yussufier@gmail.com
+// Description: 
+// WindTunnel is a simple tool designed for stress testing applications 
+// built on the Solana blockchain, including both the base layer and layer 2 networks. 
+// This tool allows developers to simulate high-load scenarios, 
+// measure performance metrics, and identify potential bottlenecks 
+// in their applications. It provides functionalities to create 
+// multiple transactions, monitor response times, and evaluate 
+// the overall stability of the network under stress conditions.
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -45,7 +54,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     return to.concat(ar || Array.prototype.slice.call(from));
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// https://www.quicknode.com/guides/solana-development/tooling/web3-2/transfer-sol
+// ref -> https://www.quicknode.com/guides/solana-development/tooling/web3-2/transfer-sol
 // npm install @solana/web3.js@2.0.0-rc.1 @solana-program/system && npm install --save-dev @types/node
 // tsc --init --resolveJsonModule true
 var web3_js_1 = require("@solana/web3.js");
@@ -127,7 +136,7 @@ function getLatestBlockhash(rpc) {
 // Function to create a transfer transaction
 function _transfer(rpc, rpcSubscriptions, user1, user2, amount) {
     return __awaiter(this, void 0, void 0, function () {
-        var latestBlockhash, transactionMessage, signedTransaction, sendAndConfirmTransaction, e_1;
+        var latestBlockhash, transactionMessage, signedTransaction, sendAndConfirmTransaction, signature, timestamp, e_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0: return [4 /*yield*/, getLatestBlockhash(rpc)];
@@ -148,6 +157,14 @@ function _transfer(rpc, rpcSubscriptions, user1, user2, amount) {
                     return [4 /*yield*/, sendAndConfirmTransaction(signedTransaction, { commitment: 'confirmed', skipPreflight: true })];
                 case 4:
                     _a.sent();
+                    signature = (0, web3_js_1.getSignatureFromTransaction)(signedTransaction);
+                    timestamp = new Date().toISOString();
+                    // write to blow.log
+                    fs.appendFile(logBlowPath, "[".concat(timestamp, "] \u2705 - Transfer transaction: ").concat(signature, "\n"), function (err) {
+                        if (err) {
+                            console.error("Failed to write to log file:", err);
+                        }
+                    });
                     return [3 /*break*/, 6];
                 case 5:
                     e_1 = _a.sent();
@@ -336,14 +353,15 @@ function executeTransfers(rpc, rpcSubscriptions, amount, keypairSignerList) {
         });
     });
 }
+var logBlowPath; // Declare global variable
 function main() {
     return __awaiter(this, void 0, void 0, function () {
-        var args, configPath, config, directoryPath, httpProvider, wssProvider, payerArray, keypairSignerArray, keypairSignerList, cachedBlockhash, blockhashTimestamp, rpc, rpcSubscriptions, payer, amount;
+        var args, configPath, config, directoryPath, httpProvider, wssProvider, payerArray, logPath, keypairSignerArray, keypairSignerList, cachedBlockhash, blockhashTimestamp, rpc, rpcSubscriptions, payer, timestamp, newLogPath, amount;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     args = process.argv.slice(2);
-                    configPath = args[0];
+                    configPath = args[0] || 'config_default.json';
                     if (!configPath) {
                         console.error("Please provide the configuration file path as a command line argument. For example:  ts-node blow.ts config.json");
                         process.exit(1);
@@ -353,6 +371,7 @@ function main() {
                     httpProvider = config.httpProvider;
                     wssProvider = config.wssProvider;
                     payerArray = new Uint8Array(config.payerArray);
+                    logPath = config.logPath;
                     keypairSignerArray = [];
                     keypairSignerList = [];
                     cachedBlockhash = null;
@@ -378,6 +397,14 @@ function main() {
                     return [4 /*yield*/, (0, web3_js_1.createKeyPairSignerFromBytes)(payerArray)];
                 case 1:
                     payer = _a.sent();
+                    logBlowPath = path.join(logPath, 'blow.log');
+                    fs.mkdirSync(path.dirname(logBlowPath), { recursive: true });
+                    // Check if the file exists, if it does, rename it
+                    if (fs.existsSync(logBlowPath)) {
+                        timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                        newLogPath = path.join(logPath, "blow_".concat(timestamp, ".log"));
+                        fs.renameSync(logBlowPath, newLogPath); // Rename file
+                    }
                     return [4 /*yield*/, initializeKeypairSignerArray(directoryPath, keypairSignerArray)];
                 case 2:
                     _a.sent();

@@ -4,9 +4,9 @@
 // built on the Solana blockchain, including both the base layer and layer 2 networks. 
 // This tool allows developers to simulate high-load scenarios, 
 // measure performance metrics, and identify potential bottlenecks 
-// in their applications. It will provide functionalities to create 
+// in their applications. It provides functionalities to create 
 // multiple transactions, monitor response times, and evaluate 
-// the overall stability of the network under stress conditions in the near future.
+// the overall stability of the network under stress conditions.
 
 // ref -> https://www.quicknode.com/guides/solana-development/tooling/web3-2/transfer-sol
 // npm install @solana/web3.js@2.0.0-rc.1 @solana-program/system && npm install --save-dev @types/node
@@ -31,12 +31,12 @@ import {
 } from "@solana/web3.js";
 
 import { getTransferSolInstruction } from "@solana-program/system";
+import { config } from "process";
 
 const LAMPORTS_PER_SOL = BigInt(1_000_000_000);
 
 const fs = require('fs');
 const path = require('path');
-
 
 
 // Load configuration file
@@ -121,14 +121,20 @@ async function _transfer(rpc: any, rpcSubscriptions: any, user1: any, user2: any
 
     const signedTransaction = await signTransactionMessageWithSigners(transactionMessage);
     const sendAndConfirmTransaction = sendAndConfirmTransactionFactory({ rpc, rpcSubscriptions });
-
+    
     try {
         await sendAndConfirmTransaction(
             signedTransaction,
             { commitment: 'confirmed', skipPreflight: true }
         );
-        // const signature = getSignatureFromTransaction(signedTransaction);
-        // console.log('✅ - Transfer transaction:', signature);
+        const signature = getSignatureFromTransaction(signedTransaction);
+        const timestamp = new Date().toISOString(); // get current timestamp
+        // write to blow.log
+        fs.appendFile(logBlowPath, `[${timestamp}] ✅ - Transfer transaction: ${signature}\n`, (err: NodeJS.ErrnoException | null) => {
+            if (err) {
+                console.error("Failed to write to log file:", err);
+            }
+        });
     } catch (e) {
         // console.error('Transfer failed:', e);
     }
@@ -244,11 +250,11 @@ async function executeTransfers(rpc: any, rpcSubscriptions: any, amount: bigint,
     }
 }
 
-
+let logBlowPath: string;  // Declare global variable
 async function main() {
     // Get the configuration file path from command line arguments
     const args = process.argv.slice(2);
-    const configPath = args[0]; // The first argument is the configuration file path
+    const configPath = args[0] || 'config_default.json'; // The first argument is the configuration file path
 
     if (!configPath) {
         console.error("Please provide the configuration file path as a command line argument. For example:  ts-node blow.ts config.json");
@@ -261,6 +267,7 @@ async function main() {
     const httpProvider = config.httpProvider;
     const wssProvider = config.wssProvider;
     const payerArray = new Uint8Array(config.payerArray);
+    const logPath = config.logPath;
 
     const keypairSignerArray: Uint8Array[] = [];
     const keypairSignerList: any[] = [];
@@ -286,6 +293,15 @@ async function main() {
     }
 
     const payer = await createKeyPairSignerFromBytes(payerArray);
+
+    logBlowPath = path.join(logPath, 'blow.log');
+    fs.mkdirSync(path.dirname(logBlowPath), { recursive: true });
+    // Check if the file exists, if it does, rename it
+    if (fs.existsSync(logBlowPath)) {
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-'); // Format timestamp
+        const newLogPath = path.join(logPath, `blow_${timestamp}.log`); // New file name
+        fs.renameSync(logBlowPath, newLogPath); // Rename file
+    }
 
     await initializeKeypairSignerArray(directoryPath, keypairSignerArray);
     console.log(`Directory reading completed, read ${keypairSignerArray.length} key pairs`);
