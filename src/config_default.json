@@ -1,6 +1,8 @@
 {
     "directoryPath": "/home/ubuntu/.config/solana/tps-wallet",
+    "logPath": "/home/ubuntu/workspace/WindTunnel/logs/",
     "httpProvider": "http://127.0.0.1:8899",
     "wssProvider": "ws://127.0.0.1:8900",
-    "payerArray": ["Fill in the keypair represented as a Uint8Array."]  
+    "payerArray": ["Fill in the keypair represented as a Uint8Array."]
 }
+
