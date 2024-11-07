@@ -133,6 +133,20 @@ function getLatestBlockhash(rpc) {
         });
     });
 }
+// async function transfer_lamports() {
+//     const transaction = new Transaction();
+//     let ix = SystemProgram.transfer({
+//     fromPubkey: feePayer.publicKey,
+//     toPubkey: sonic_data_account,
+//     lamports: 1000000,
+//     });
+//     transaction.add(ix);
+//     connection.sendTransaction(transaction, [feePayer]).then((signature) => {
+//     console.log('tx signature:', signature);
+//     }).catch((error) => {
+//     console.error('Error:', error);
+//    });
+// }
 // Function to create a transfer transaction
 function _transfer(rpc, rpcSubscriptions, user1, user2, amount) {
     return __awaiter(this, void 0, void 0, function () {
@@ -160,7 +174,7 @@ function _transfer(rpc, rpcSubscriptions, user1, user2, amount) {
                     signature = (0, web3_js_1.getSignatureFromTransaction)(signedTransaction);
                     timestamp = new Date().toISOString();
                     // write to blow.log
-                    fs.appendFile(logBlowPath, "[".concat(timestamp, "] \u2705 - Transfer transaction: ").concat(signature, "\n"), function (err) {
+                    fs.appendFile(logBlowPath, "[".concat(timestamp, "] Transaction.transfer: ").concat(signature, "\n"), function (err) {
                         if (err) {
                             console.error("Failed to write to log file:", err);
                         }
@@ -341,7 +355,7 @@ function executeTransfers(rpc, rpcSubscriptions, amount, keypairSignerList) {
                     _a = getRandomElements(keypairSignerList, 2), user1 = _a[0], user2 = _a[1];
                     transferPromise = _transfer(rpc, rpcSubscriptions, user1, user2, amount);
                     transferPromises.push(transferPromise); // Add promise to the array
-                    if (!(transferPromises.length >= 100)) return [3 /*break*/, 3];
+                    if (!(transferPromises.length >= 500)) return [3 /*break*/, 3];
                     return [4 /*yield*/, Promise.all(transferPromises)];
                 case 2:
                     _b.sent(); // Execute all transfers in parallel

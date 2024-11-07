@@ -28,6 +28,7 @@ import {
     getSignatureFromTransaction,
     address,
     createSignerFromKeyPair,
+    sendTransactionWithoutConfirmingFactory
 } from "@solana/web3.js";
 
 import { getTransferSolInstruction } from "@solana-program/system";
@@ -100,6 +101,23 @@ async function getLatestBlockhash(rpc: any) {
     return cachedBlockhash;
 }
 
+// async function transfer_lamports() {
+//     const transaction = new Transaction();
+//     let ix = SystemProgram.transfer({
+//     fromPubkey: feePayer.publicKey,
+//     toPubkey: sonic_data_account,
+//     lamports: 1000000,
+//     });
+//     transaction.add(ix);
+    
+//     connection.sendTransaction(transaction, [feePayer]).then((signature) => {
+//     console.log('tx signature:', signature);
+//     }).catch((error) => {
+//     console.error('Error:', error);
+//    });
+// }
+
+
 // Function to create a transfer transaction
 async function _transfer(rpc: any, rpcSubscriptions: any, user1: any, user2: any, amount: bigint) {
 
@@ -118,11 +136,12 @@ async function _transfer(rpc: any, rpcSubscriptions: any, user1: any, user2: any
             tx
         )
     );
-
+    
     const signedTransaction = await signTransactionMessageWithSigners(transactionMessage);
     const sendAndConfirmTransaction = sendAndConfirmTransactionFactory({ rpc, rpcSubscriptions });
     
     try {
+        
         await sendAndConfirmTransaction(
             signedTransaction,
             { commitment: 'confirmed', skipPreflight: true }
@@ -130,7 +149,7 @@ async function _transfer(rpc: any, rpcSubscriptions: any, user1: any, user2: any
         const signature = getSignatureFromTransaction(signedTransaction);
         const timestamp = new Date().toISOString(); // get current timestamp
         // write to blow.log
-        fs.appendFile(logBlowPath, `[${timestamp}] ✅ - Transfer transaction: ${signature}\n`, (err: NodeJS.ErrnoException | null) => {
+        fs.appendFile(logBlowPath, `[${timestamp}] Transaction.transfer: ${signature}\n`, (err: NodeJS.ErrnoException | null) => {
             if (err) {
                 console.error("Failed to write to log file:", err);
             }
@@ -242,7 +261,7 @@ async function executeTransfers(rpc: any, rpcSubscriptions: any, amount: bigint,
         transferPromises.push(transferPromise); // Add promise to the array
 
         // Control the number of concurrent executions to avoid too many requests
-        if (transferPromises.length >= 100) {
+        if (transferPromises.length >= 500) {
             await Promise.all(transferPromises); // Execute all transfers in parallel
             transferPromises.length = 0; // Clear the array
         }
