@@ -33,6 +33,9 @@ import {
 
 import { getTransferSolInstruction } from "@solana-program/system";
 import { config } from "process";
+import { setMaxIdleHTTPParsers } from "http";
+import { time } from "console";
+
 
 const LAMPORTS_PER_SOL = BigInt(1_000_000_000);
 
@@ -59,7 +62,7 @@ async function initializeKeypairSignerArray(directoryPath: string, keypairSigner
                 return reject('Failed to read directory: ' + err);
             }
 
-            const readPromises = files.slice(0, 300).map(file => {
+            const readPromises = files.slice(0, 1000).map(file => {
                 return new Promise<void>((resolveFile, rejectFile) => {
                     if (path.extname(file) === '.json') {
                         const filePath = path.join(directoryPath, file);
@@ -101,6 +104,58 @@ async function getLatestBlockhash(rpc: any) {
     return cachedBlockhash;
 }
 
+async function getBlockHeight(rpc: any) {
+    try {
+        // 假设 rpc 对象有一个方法 getBlockHeight 来获取当前区块高度
+        const blockHeight = await rpc.getBlockHeight().send(); // 获取区块高度
+        console.log(`当前区块高度: ${blockHeight}`);
+        // return blockHeight; // 返回区块高度
+    } catch (error) {
+        console.error("获取区块高度时出错:", error);
+        throw error; // 抛出错误以便调用者处理
+    }
+}
+//npm install node-fetch
+// import fetch from 'node-fetch';
+let count_getBlockHeight2 = 0
+async function getBlockHeight2(rpc_url: string): Promise<number> {
+    // const url = 'https://solana.drpc.org';
+    const headers = {
+        'accept': 'application/json',
+        'content-type': 'application/json',
+    };
+    const randomId = Math.floor(Math.random() * 100000);
+    const body = JSON.stringify({
+        id: randomId,
+        jsonrpc: '2.0',
+        method: 'getBlockHeight',
+    });
+
+    try {
+        const response = await fetch(rpc_url, {
+            method: 'POST',
+            headers: headers,
+            body: body,
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (data.result) {
+            console.log(`(${count_getBlockHeight2}), id:${data.id}, slot:${data.result}`);
+            count_getBlockHeight2 += 1;
+            return data.result; // 返回区块高度
+        } else {
+            throw new Error('Invalid response structure');
+        }
+    } catch (error) {
+        console.error('获取区块高度时出错:', error);
+        throw error; 
+    }
+}
+
 // async function transfer_lamports() {
 //     const transaction = new Transaction();
 //     let ix = SystemProgram.transfer({
@@ -121,8 +176,11 @@ async function getLatestBlockhash(rpc: any) {
 // Function to create a transfer transaction
 async function _transfer(rpc: any, rpcSubscriptions: any, user1: any, user2: any, amount: bigint) {
 
+
     const latestBlockhash = await getLatestBlockhash(rpc); // Get the latest blockhash
-   
+    
+
+    // latestBlockhash = "FivdCGTSrfHt5nMNDC5kD7HmHCfL3Eb3VXcqJ25bCRiC"; // 指定最新的 blockhash
     const transactionMessage = pipe(
         createTransactionMessage({ version: 0 }),
         tx => setTransactionMessageFeePayer(user1.address, tx),
@@ -141,7 +199,6 @@ async function _transfer(rpc: any, rpcSubscriptions: any, user1: any, user2: any
     const sendAndConfirmTransaction = sendAndConfirmTransactionFactory({ rpc, rpcSubscriptions });
     
     try {
-        
         await sendAndConfirmTransaction(
             signedTransaction,
             { commitment: 'confirmed', skipPreflight: true }
@@ -192,21 +249,45 @@ async function _airdrop2(rpc: any, rpcSubscriptions: any, user2: any) {
     }
 }
 
-
-function getRandomElements(arr: any[], count: number): any[] {
-    /// Create a copy to avoid modifying the original array
-    const shuffled = [...arr];
-
-    // Fisher-Yates shuffle algorithm
-    for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1)); // Generate random index
-        // Swap elements
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+function getRandomElements<T>(arr: T[], count: number): T[] | null {
+    if (count < 1) {
+        console.error("count 必须大于 0");
+        return null; // 如果 count 小于 1，返回 null
+    }
+    if (arr.length < count) {
+        console.error("数组中元素不足以选择所需数量的不同元素");
+        return null; // 如果数组中元素不足，返回 null
     }
 
-    // Return the first count elements
-    return shuffled.slice(0, count);
+    // 使用 Fisher-Yates 洗牌算法
+    const result: T[] = [];
+    const seenIndices = new Set<number>();
+
+    while (result.length < count) {
+        const randomIndex = Math.floor(Math.random() * arr.length);
+        if (!seenIndices.has(randomIndex)) {
+            seenIndices.add(randomIndex);
+            result.push(arr[randomIndex]);
+        }
+    }
+
+    return result;
 }
+
+// function getRandomElements(arr: any[], count: number): any[] {
+//     /// Create a copy to avoid modifying the original array
+//     const shuffled = [...arr];
+
+//     // Fisher-Yates shuffle algorithm
+//     for (let i = shuffled.length - 1; i > 0; i--) {
+//         const j = Math.floor(Math.random() * (i + 1)); // Generate random index
+//         // Swap elements
+//         [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+//     }
+
+//     // Return the first count elements
+//     return shuffled.slice(0, count);
+// }
 
 async function getBalance(rpc: any, pubkey: string) {
     try {
@@ -246,6 +327,46 @@ async function initializeKeypairSigners(keypairSignerArray: Uint8Array[], keypai
     }
 }
 
+async function executeGetBlockHeight(rpc: any) {
+    const blowPromises = []; // Array to store all transfer promises
+    // Infinite loop
+    let a = true;
+    while (a) {
+        
+        const blockHeightPromise = getBlockHeight(rpc); // 调用 getBlockHeight 函数
+        blowPromises.push(blockHeightPromise); // Add promise to the array
+        // Control the number of concurrent executions to avoid too many requests
+        if (blowPromises.length >= 500) {
+            await Promise.all(blowPromises); // Execute all transfers in parallel
+            blowPromises.length = 0; // Clear the array
+            console.log("+500");
+        }
+    }
+}
+
+async function executeGetBlockHeight2(rpc_url: string) {
+    const blowPromises = []; // Array to store all transfer promises
+    // Infinite loop
+    let a = true;
+    while (a) {
+        
+        const blockHeightPromise = getBlockHeight2(rpc_url); // 调用 getBlockHeight 函数
+        blowPromises.push(blockHeightPromise); // Add promise to the array
+        // Control the number of concurrent executions to avoid too many requests
+        if (blowPromises.length >= 500) {
+            try{
+                await Promise.all(blowPromises); // Execute all transfers in parallel
+            }
+            catch(e){
+                console.log(e);
+            }
+            
+            blowPromises.length = 0; // Clear the array 
+            console.log("+500");
+        }
+    }
+}
+
 // Execute 1000 transfers
 async function executeTransfers(rpc: any, rpcSubscriptions: any, amount: bigint, keypairSignerList: any[]) {
     const transferPromises = []; // Array to store all transfer promises
@@ -254,20 +375,26 @@ async function executeTransfers(rpc: any, rpcSubscriptions: any, amount: bigint,
     let a = true;
     while (a) {
         // Randomly select two elements
-        const [user1, user2] = getRandomElements(keypairSignerList, 2);
-
+        const users = getRandomElements(keypairSignerList, 2);
+        if (users == null) {
+            continue;
+        } 
         // Create a transfer promise
-        const transferPromise = _transfer(rpc, rpcSubscriptions, user1, user2, amount)
+        const transferPromise = _transfer(rpc, rpcSubscriptions, users[0], users[1], amount)
         transferPromises.push(transferPromise); // Add promise to the array
 
         // Control the number of concurrent executions to avoid too many requests
         if (transferPromises.length >= 500) {
             await Promise.all(transferPromises); // Execute all transfers in parallel
             transferPromises.length = 0; // Clear the array
+            
         }
         // a = false;
     }
 }
+
+
+
 
 let logBlowPath: string;  // Declare global variable
 async function main() {
@@ -294,6 +421,8 @@ async function main() {
     let blockhashTimestamp: number = 0;
 
     const rpc = createSolanaRpc(httpProvider);
+    console.log(httpProvider);
+    
     // Check if RPC creation was successful
     if (!rpc) {
         console.error("Failed to create RPC connection.");
@@ -334,10 +463,13 @@ async function main() {
         console.error(`Insufficient elements in keypairSignerList, unable to execute the transfer`);
         return;
     }
+
     console.log(`Running ... ...`);
     // Execute transfers
     const amount = BigInt(1_000); // Set transfer amount in Lamports
     await executeTransfers(rpc, rpcSubscriptions, amount, keypairSignerList);
+    // await executeGetBlockHeight(rpc);
+    // await executeGetBlockHeight2(httpProvider);
 
 }
 

@@ -22,17 +22,10 @@ function checkRunningProcesses() {
 }
 
 
-async function analyzeTransactions(logFile: string): Promise<Map<string, number>> {
+async function analyzeTransactions(lines: string[]): Promise<Map<string, number>> {
     const transactionCount = new Map<string, number>();
 
-    const fileStream = fs.createReadStream(logFile);
-    const rl = readline.createInterface({
-        input: fileStream,
-        crlfDelay: Infinity,
-    });
-
-    for await (const line of rl) {
-        // 假设日志行格式为 "时间 Transaction ..."
+    for (const line of lines) {
         const match = line.match(/\[(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z)\] Transaction\.transfer: .*/);
         if (match) {
             const timestamp = match[1];
@@ -40,17 +33,32 @@ async function analyzeTransactions(logFile: string): Promise<Map<string, number>
             transactionCount.set(minute, (transactionCount.get(minute) || 0) + 1);
         }
     }
-
     return transactionCount;
 }
 
 async function main() {
-    // checkRunningProcesses();
     const logFilePath = '/home/ubuntu/workspace/WindTunnel/logs/blow.log';
-    const result = await analyzeTransactions(logFilePath);
-    for (const [minute, count] of Array.from(result.entries()).sort()) {
+    const transactionCount = new Map<string, number>();
+
+    // 读取初始文件内容
+    const initialLines = fs.readFileSync(logFilePath, 'utf-8').split('\n');
+    const initialResult = await analyzeTransactions(initialLines);
+    for (const [minute, count] of Array.from(initialResult.entries()).sort()) {
+        transactionCount.set(minute, count);
         console.log(`${minute}: ${count} Transactions`);
     }
+
+    // 监控文件变化
+    fs.watch(logFilePath, async (eventType) => {
+        if (eventType === 'change') {
+            const newLines = fs.readFileSync(logFilePath, 'utf-8').split('\n');
+            const newTransactions = await analyzeTransactions(newLines);
+            for (const [minute, count] of Array.from(newTransactions.entries())) {
+                transactionCount.set(minute, (transactionCount.get(minute) || 0) + count);
+                console.log(`${minute}: ${transactionCount.get(minute)} Transactions`);
+            }
+        }
+    });
 }
 
 main().catch(console.error);

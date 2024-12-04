@@ -6,3 +6,7 @@ package-lock.json
 
 node_modules/
 logs/
+src/config_game_fast.json
+src/config_game_native.json
+src/config_devnet.json
+src/config_zeta.json

@@ -44,6 +44,15 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 // ref -> https://www.quicknode.com/guides/solana-development/tooling/web3-2/transfer-sol
 // npm install @solana/web3.js@2.0.0-rc.1 @solana-program/system && npm install --save-dev @types/node
@@ -73,7 +82,7 @@ function initializeKeypairSignerArray(directoryPath, keypairSignerArray) {
                         if (err) {
                             return reject('Failed to read directory: ' + err);
                         }
-                        var readPromises = files.slice(0, 1000).map(function (file) {
+                        var readPromises = files.slice(0, 300).map(function (file) {
                             return new Promise(function (resolveFile, rejectFile) {
                                 if (path.extname(file) === '.json') {
                                     var filePath = path.join(directoryPath, file);
@@ -120,80 +129,6 @@ function getLatestBlockhash(rpc) {
                     blockhashTimestamp = currentTime; // Update the timestamp
                     _a.label = 2;
                 case 2: return [2 /*return*/, cachedBlockhash];
-            }
-        });
-    });
-}
-function getBlockHeight(rpc) {
-    return __awaiter(this, void 0, void 0, function () {
-        var blockHeight, error_1;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    _a.trys.push([0, 2, , 3]);
-                    return [4 /*yield*/, rpc.getBlockHeight().send()];
-                case 1:
-                    blockHeight = _a.sent();
-                    console.log("\u5F53\u524D\u533A\u5757\u9AD8\u5EA6: ".concat(blockHeight));
-                    return [3 /*break*/, 3];
-                case 2:
-                    error_1 = _a.sent();
-                    console.error("获取区块高度时出错:", error_1);
-                    throw error_1; // 抛出错误以便调用者处理
-                case 3: return [2 /*return*/];
-            }
-        });
-    });
-}
-//npm install node-fetch
-// import fetch from 'node-fetch';
-var count_getBlockHeight2 = 0;
-function getBlockHeight2(rpc_url) {
-    return __awaiter(this, void 0, void 0, function () {
-        var headers, randomId, body, response, data, error_2;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    headers = {
-                        'accept': 'application/json',
-                        'content-type': 'application/json',
-                    };
-                    randomId = Math.floor(Math.random() * 100000);
-                    body = JSON.stringify({
-                        id: randomId,
-                        jsonrpc: '2.0',
-                        method: 'getBlockHeight',
-                    });
-                    _a.label = 1;
-                case 1:
-                    _a.trys.push([1, 4, , 5]);
-                    return [4 /*yield*/, fetch(rpc_url, {
-                            method: 'POST',
-                            headers: headers,
-                            body: body,
-                        })];
-                case 2:
-                    response = _a.sent();
-                    if (!response.ok) {
-                        throw new Error("HTTP error! status: ".concat(response.status));
-                    }
-                    return [4 /*yield*/, response.json()];
-                case 3:
-                    data = _a.sent();
-                    if (data.result) {
-                        console.log("(".concat(count_getBlockHeight2, "), id:").concat(data.id, ", slot:").concat(data.result));
-                        count_getBlockHeight2 += 1;
-                        return [2 /*return*/, data.result]; // 返回区块高度
-                    }
-                    else {
-                        throw new Error('Invalid response structure');
-                    }
-                    return [3 /*break*/, 5];
-                case 4:
-                    error_2 = _a.sent();
-                    console.error('获取区块高度时出错:', error_2);
-                    throw error_2;
-                case 5: return [2 /*return*/];
             }
         });
     });
@@ -256,7 +191,7 @@ function _transfer(rpc, rpcSubscriptions, user1, user2, amount) {
 // Function to airdrop SOL
 function _airdrop(rpc, user1) {
     return __awaiter(this, void 0, void 0, function () {
-        var tx1, error_3;
+        var tx1, error_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -268,8 +203,8 @@ function _airdrop(rpc, user1) {
                     console.log("\u2705 - tx: ".concat(tx1));
                     return [3 /*break*/, 3];
                 case 2:
-                    error_3 = _a.sent();
-                    console.error("Airdrop failed:", error_3);
+                    error_1 = _a.sent();
+                    console.error("Airdrop failed:", error_1);
                     return [3 /*break*/, 3];
                 case 3: return [2 /*return*/];
             }
@@ -279,7 +214,7 @@ function _airdrop(rpc, user1) {
 // Function to airdrop using factory function
 function _airdrop2(rpc, rpcSubscriptions, user2) {
     return __awaiter(this, void 0, void 0, function () {
-        var airdrop, tx1, error_4;
+        var airdrop, tx1, error_2;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -296,8 +231,8 @@ function _airdrop2(rpc, rpcSubscriptions, user2) {
                     console.log("\u2705 - tx: ".concat(tx1));
                     return [3 /*break*/, 3];
                 case 2:
-                    error_4 = _a.sent();
-                    console.error("Airdrop failed:", error_4);
+                    error_2 = _a.sent();
+                    console.error("Airdrop failed:", error_2);
                     return [3 /*break*/, 3];
                 case 3: return [2 /*return*/];
             }
@@ -305,38 +240,18 @@ function _airdrop2(rpc, rpcSubscriptions, user2) {
     });
 }
 function getRandomElements(arr, count) {
-    if (count < 1) {
-        console.error("count 必须大于 0");
-        return null; // 如果 count 小于 1，返回 null
+    var _a;
+    /// Create a copy to avoid modifying the original array
+    var shuffled = __spreadArray([], arr, true);
+    // Fisher-Yates shuffle algorithm
+    for (var i = shuffled.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1)); // Generate random index
+        // Swap elements
+        _a = [shuffled[j], shuffled[i]], shuffled[i] = _a[0], shuffled[j] = _a[1];
     }
-    if (arr.length < count) {
-        console.error("数组中元素不足以选择所需数量的不同元素");
-        return null; // 如果数组中元素不足，返回 null
-    }
-    // 使用 Fisher-Yates 洗牌算法
-    var result = [];
-    var seenIndices = new Set();
-    while (result.length < count) {
-        var randomIndex = Math.floor(Math.random() * arr.length);
-        if (!seenIndices.has(randomIndex)) {
-            seenIndices.add(randomIndex);
-            result.push(arr[randomIndex]);
-        }
-    }
-    return result;
+    // Return the first count elements
+    return shuffled.slice(0, count);
 }
-// function getRandomElements(arr: any[], count: number): any[] {
-//     /// Create a copy to avoid modifying the original array
-//     const shuffled = [...arr];
-//     // Fisher-Yates shuffle algorithm
-//     for (let i = shuffled.length - 1; i > 0; i--) {
-//         const j = Math.floor(Math.random() * (i + 1)); // Generate random index
-//         // Swap elements
-//         [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-//     }
-//     // Return the first count elements
-//     return shuffled.slice(0, count);
-// }
 function getBalance(rpc, pubkey) {
     return __awaiter(this, void 0, void 0, function () {
         var lamports_1, e_2;
@@ -396,7 +311,7 @@ function initializeSignerBalance(rpc, rpcSubscriptions, payer, keypairSignerList
 // Iterate over keypairSignerArray and convert elements to keypairSignerList
 function initializeKeypairSigners(keypairSignerArray, keypairSignerList) {
     return __awaiter(this, void 0, void 0, function () {
-        var _i, keypairSignerArray_1, bytes, signer, error_5;
+        var _i, keypairSignerArray_1, bytes, signer, error_3;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -414,8 +329,8 @@ function initializeKeypairSigners(keypairSignerArray, keypairSignerList) {
                     keypairSignerList.push(signer);
                     return [3 /*break*/, 5];
                 case 4:
-                    error_5 = _a.sent();
-                    console.error("Failed to create signer:", error_5);
+                    error_3 = _a.sent();
+                    console.error("Failed to create signer:", error_3);
                     return [3 /*break*/, 5];
                 case 5:
                     _i++;
@@ -425,91 +340,27 @@ function initializeKeypairSigners(keypairSignerArray, keypairSignerList) {
         });
     });
 }
-function executeGetBlockHeight(rpc) {
-    return __awaiter(this, void 0, void 0, function () {
-        var blowPromises, a, blockHeightPromise;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    blowPromises = [];
-                    a = true;
-                    _a.label = 1;
-                case 1:
-                    if (!a) return [3 /*break*/, 4];
-                    blockHeightPromise = getBlockHeight(rpc);
-                    blowPromises.push(blockHeightPromise); // Add promise to the array
-                    if (!(blowPromises.length >= 500)) return [3 /*break*/, 3];
-                    return [4 /*yield*/, Promise.all(blowPromises)];
-                case 2:
-                    _a.sent(); // Execute all transfers in parallel
-                    blowPromises.length = 0; // Clear the array
-                    console.log("+500");
-                    _a.label = 3;
-                case 3: return [3 /*break*/, 1];
-                case 4: return [2 /*return*/];
-            }
-        });
-    });
-}
-function executeGetBlockHeight2(rpc_url) {
-    return __awaiter(this, void 0, void 0, function () {
-        var blowPromises, a, blockHeightPromise, e_3;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    blowPromises = [];
-                    a = true;
-                    _a.label = 1;
-                case 1:
-                    if (!a) return [3 /*break*/, 7];
-                    blockHeightPromise = getBlockHeight2(rpc_url);
-                    blowPromises.push(blockHeightPromise); // Add promise to the array
-                    if (!(blowPromises.length >= 500)) return [3 /*break*/, 6];
-                    _a.label = 2;
-                case 2:
-                    _a.trys.push([2, 4, , 5]);
-                    return [4 /*yield*/, Promise.all(blowPromises)];
-                case 3:
-                    _a.sent(); // Execute all transfers in parallel
-                    return [3 /*break*/, 5];
-                case 4:
-                    e_3 = _a.sent();
-                    console.log(e_3);
-                    return [3 /*break*/, 5];
-                case 5:
-                    blowPromises.length = 0; // Clear the array 
-                    console.log("+500");
-                    _a.label = 6;
-                case 6: return [3 /*break*/, 1];
-                case 7: return [2 /*return*/];
-            }
-        });
-    });
-}
 // Execute 1000 transfers
 function executeTransfers(rpc, rpcSubscriptions, amount, keypairSignerList) {
     return __awaiter(this, void 0, void 0, function () {
-        var transferPromises, a, users, transferPromise;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
+        var transferPromises, a, _a, user1, user2, transferPromise;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
                 case 0:
                     transferPromises = [];
                     a = true;
-                    _a.label = 1;
+                    _b.label = 1;
                 case 1:
                     if (!a) return [3 /*break*/, 4];
-                    users = getRandomElements(keypairSignerList, 2);
-                    if (users == null) {
-                        return [3 /*break*/, 1];
-                    }
-                    transferPromise = _transfer(rpc, rpcSubscriptions, users[0], users[1], amount);
+                    _a = getRandomElements(keypairSignerList, 2), user1 = _a[0], user2 = _a[1];
+                    transferPromise = _transfer(rpc, rpcSubscriptions, user1, user2, amount);
                     transferPromises.push(transferPromise); // Add promise to the array
                     if (!(transferPromises.length >= 500)) return [3 /*break*/, 3];
                     return [4 /*yield*/, Promise.all(transferPromises)];
                 case 2:
-                    _a.sent(); // Execute all transfers in parallel
+                    _b.sent(); // Execute all transfers in parallel
                     transferPromises.length = 0; // Clear the array
-                    _a.label = 3;
+                    _b.label = 3;
                 case 3: return [3 /*break*/, 1];
                 case 4: return [2 /*return*/];
             }
@@ -540,7 +391,6 @@ function main() {
                     cachedBlockhash = null;
                     blockhashTimestamp = 0;
                     rpc = (0, web3_js_1.createSolanaRpc)(httpProvider);
-                    console.log(httpProvider);
                     // Check if RPC creation was successful
                     if (!rpc) {
                         console.error("Failed to create RPC connection.");
